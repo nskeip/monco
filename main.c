@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_ENTRIES_N 100
+#define MAX_ENTRY_LEN 100
+
+char entries[MAX_ENTRIES_N][MAX_ENTRY_LEN] = {{'\0'}};
+
 void run_tests() {
   assert(1 == 1);
   printf("\x1b[32m"); // green text

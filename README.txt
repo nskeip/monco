@@ -5,7 +5,7 @@ It is called "Monco" because it is a parody on Mongo written on C.
 ROADMAP
 
 [x] Nice README.txt.
-[ ] Storage of strings.
+[x] Storage of strings.
 [ ] Commands:
   - [ ] add
   - [ ] select (substring)
