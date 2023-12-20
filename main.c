@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
       run_tests();
       return EXIT_SUCCESS;
     }
+    return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
