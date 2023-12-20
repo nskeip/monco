@@ -6,11 +6,11 @@ ROADMAP
 
 [x] Nice README.txt.
 [x] Storage of strings.
+[ ] REPL.
 [ ] Commands:
   - [ ] add
   - [ ] select (substring)
   - [ ] select operators: &, |, (), !
-[ ] REPL.
 [ ] Storage of documents (similar to MongoDB) where values are strings.
 [ ] More sophisticated types:
   - [ ] integers,
