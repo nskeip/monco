@@ -6,7 +6,7 @@ ROADMAP
 
 [x] Nice README.txt.
 [x] Storage of strings.
-[ ] REPL.
+[x] REPL.
 [ ] Commands:
   - [ ] add
   - [ ] select (substring)
