@@ -41,8 +41,8 @@ int evaluate(const char *const input) {
     char *entry = malloc(entry_initial_size);
     if (getline(&entry, &entry_initial_size, stdin) == -1) {
       free(entry);
-      fprintf(stderr, "Failed to read entry! It's gonna blow!\n");
-      return 1;
+      fprintf(stderr, "Failed to read entry! Try again\n");
+      return 0;
     }
     char *end = strchr(entry, '\n');
     if (end != NULL) {
