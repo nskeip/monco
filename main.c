@@ -16,16 +16,21 @@ void run_tests() {
   printf("All tests passed\n");
 }
 
+void print_help_command(char short_name, const char *const long_name,
+                        const char *const description) {
+  printf("%10c, %-10s    %s\n", short_name, long_name, description);
+}
+
 int evaluate(const char *const input) {
   if (*input == '\0') {
     return 0;
   }
   if (strcmp(input, "help") == 0 || strcmp(input, "h") == 0) {
     puts("Available commands:");
-    printf("%10s, %-10s    %s\n", "a", "add", "Add an entry");
-    printf("%10s, %-10s    %s\n", "l", "list", "List all entries");
-    printf("%10s, %-10s    %s\n", "h", "help", "Read this help");
-    printf("%10s, %-10s    %s\n", "q", "quit", "Quit the application");
+    print_help_command('a', "add", "Add an entry");
+    print_help_command('l', "list", "List all entries");
+    print_help_command('h', "help", "Read this help");
+    print_help_command('q', "quit", "Quit the application");
   } else if (strcmp(input, "add") == 0 || strcmp(input, "a") == 0) {
     if (entries_n == MAX_ENTRIES_N) {
       puts("Maximum number of entries reached! Will not add more.");
@@ -70,9 +75,8 @@ int main(int argc, char *argv[]) {
   if (argc > 1) {
     if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
       puts("Usage:");
-      printf("%10s, %-10s    %s\n", "-t", "--tests", "Run tests");
-      printf("%10s, %-10s    %s\n", "-h", "--help",
-             "Display this help message");
+      print_help_command('t', "--test", "Run tests");
+      print_help_command('h', "--help", "Display this help message");
       return EXIT_SUCCESS;
     }
     if (strcmp(argv[1], "--test") == 0 || strcmp(argv[1], "-t") == 0) {
