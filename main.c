@@ -17,12 +17,17 @@ void run_tests() {
 }
 
 int evaluate(const char *const input) {
+  if (*input == '\0') {
+    return 0;
+  }
   if (strcmp(input, "help") == 0 || strcmp(input, "h") == 0) {
     puts("Available commands:");
     printf("%10s, %-10s    %s\n", "h", "help", "Read this help");
     printf("%10s, %-10s    %s\n", "q", "quit", "Quit the application");
   } else if (strcmp(input, "quit") == 0 || strcmp(input, "q") == 0) {
     return 1;
+  } else {
+    fprintf(stderr, "Unknown command: %s. Type 'help' for help.\n", input);
   }
   return 0;
 }
