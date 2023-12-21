@@ -28,6 +28,7 @@ int evaluate(const char *const input) {
   if (strcmp(input, "help") == 0 || strcmp(input, "h") == 0) {
     puts("Available commands:");
     print_help_command('a', "add", "Add an entry");
+    print_help_command('d', "del", "Delete an entry");
     print_help_command('l', "list", "List all entries");
     print_help_command('h', "help", "Read this help");
     print_help_command('q', "quit", "Quit the application");
@@ -49,9 +50,34 @@ int evaluate(const char *const input) {
       *end = '\0';
     }
     entries[entries_n++] = entry;
+  } else if (strcmp(input, "del") == 0 || strcmp(input, "d") == 0) {
+    if (entries_n == 0) {
+      puts("No entries to delete!");
+      return 0;
+    }
+    puts("Enter number:");
+    size_t entry_number;
+    if (scanf("%zu", &entry_number) != 1) {
+      fprintf(stderr, "Kinda strange entry number. Are you using stilys?\n");
+      return 0;
+    }
+
+    // consume the rest of the line
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+      ;
+
+    if (entry_number >= entries_n) {
+      fprintf(stderr, "Entry number out of range!\n");
+      return 0;
+    }
+    free(entries[entry_number]);
+    entries[entry_number] = entries[entries_n - 1];
+    entries[entries_n - 1] = NULL;
+    entries_n--;
   } else if (strcmp(input, "list") == 0 || strcmp(input, "l") == 0) {
     for (size_t i = 0; i < entries_n; i++) {
-      printf("%zu) %s\n", i + 1, entries[i]);
+      printf("%zu) %s\n", i, entries[i]);
     }
     switch (entries_n) {
     case 0:

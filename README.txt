@@ -9,6 +9,7 @@ ROADMAP
 [x] REPL.
 [.] Commands:
   - [x] add
+  - [x] del
   - [ ] select (substring)
   - [ ] select operators: &, |, (), !
 [ ] Storage of documents (similar to MongoDB) where values are strings.
