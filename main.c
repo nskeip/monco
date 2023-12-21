@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,18 +22,31 @@ void print_help_command(char short_name, const char *const long_name,
   printf("%10c, %-10s    %s\n", short_name, long_name, description);
 }
 
+bool str_eq(const char *a, const char *b) {
+  while (1) {
+    if (*a != *b) {
+      return false;
+    }
+    if (*a == '\0') {
+      return true;
+    }
+    a++;
+    b++;
+  }
+}
+
 int evaluate(const char *const input) {
   if (*input == '\0') {
     return 0;
   }
-  if (strcmp(input, "help") == 0 || strcmp(input, "h") == 0) {
+  if (str_eq(input, "help") || str_eq(input, "h")) {
     puts("Available commands:");
     print_help_command('a', "add", "Add an entry");
     print_help_command('d', "del", "Delete an entry");
     print_help_command('l', "list", "List all entries");
     print_help_command('h', "help", "Read this help");
     print_help_command('q', "quit", "Quit the application");
-  } else if (strcmp(input, "add") == 0 || strcmp(input, "a") == 0) {
+  } else if (str_eq(input, "add") || str_eq(input, "a")) {
     if (entries_n == MAX_ENTRIES_N) {
       puts("Maximum number of entries reached! Will not add more.");
       return 0;
@@ -50,7 +64,7 @@ int evaluate(const char *const input) {
       *end = '\0';
     }
     entries[entries_n++] = entry;
-  } else if (strcmp(input, "del") == 0 || strcmp(input, "d") == 0) {
+  } else if (str_eq(input, "del") || str_eq(input, "d")) {
     if (entries_n == 0) {
       puts("No entries to delete!");
       return 0;
@@ -75,7 +89,7 @@ int evaluate(const char *const input) {
     entries[entry_number] = entries[entries_n - 1];
     entries[entries_n - 1] = NULL;
     entries_n--;
-  } else if (strcmp(input, "list") == 0 || strcmp(input, "l") == 0) {
+  } else if (str_eq(input, "list") || str_eq(input, "l")) {
     for (size_t i = 0; i < entries_n; i++) {
       printf("%zu) %s\n", i, entries[i]);
     }
@@ -89,7 +103,7 @@ int evaluate(const char *const input) {
     default:
       printf("Total: %zu entries\n", entries_n);
     }
-  } else if (strcmp(input, "quit") == 0 || strcmp(input, "q") == 0) {
+  } else if (str_eq(input, "quit") || str_eq(input, "q")) {
     return 1;
   } else {
     fprintf(stderr, "Unknown command: %s. Type 'help' for help.\n", input);
@@ -99,13 +113,13 @@ int evaluate(const char *const input) {
 
 int main(int argc, char *argv[]) {
   if (argc > 1) {
-    if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+    if (str_eq(argv[1], "--help") || str_eq(argv[1], "-h")) {
       puts("Usage:");
       print_help_command('t', "--test", "Run tests");
       print_help_command('h', "--help", "Display this help message");
       return EXIT_SUCCESS;
     }
-    if (strcmp(argv[1], "--test") == 0 || strcmp(argv[1], "-t") == 0) {
+    if (str_eq(argv[1], "--test") || str_eq(argv[1], "-t")) {
       run_tests();
       return EXIT_SUCCESS;
     }
