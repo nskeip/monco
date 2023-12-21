@@ -9,14 +9,6 @@
 char *entries[MAX_ENTRIES_N] = {NULL};
 size_t entries_n = 0;
 
-void run_tests() {
-  assert(1 == 1);
-  printf("\x1b[32m"); // green text
-  printf("\u2713 ");  // Unicode check mark
-  printf("\x1b[0m");  // Reset text color to default
-  printf("All tests passed\n");
-}
-
 void print_help_command(char short_name, const char *const long_name,
                         const char *const description) {
   printf("%10c, %-10s    %s\n", short_name, long_name, description);
@@ -33,6 +25,108 @@ bool str_eq(const char *a, const char *b) {
     a++;
     b++;
   }
+}
+
+typedef enum {
+  TOKEN_TYPE_STR,
+  TOKEN_TYPE_OP_OR,
+  TOKEN_TYPE_OP_AND,
+  TOKEN_TYPE_PAR_OPEN,
+  TOKEN_TYPE_PAR_CLOSE,
+} TokenType;
+
+typedef struct {
+  TokenType type;
+  char *str;
+} Token;
+
+typedef struct {
+  size_t tokens_n;
+  Token *tokens;
+} TokenList;
+
+TokenList *token_list_init(void) {
+  TokenList *token_list = malloc(sizeof(TokenList));
+  token_list->tokens_n = 0;
+  token_list->tokens = NULL;
+  return token_list;
+}
+
+void token_list_destroy(TokenList *token_list) {
+  for (size_t i = 0; i < token_list->tokens_n; i++) {
+    if (token_list->tokens[i].type == TOKEN_TYPE_STR) {
+      free(token_list->tokens[i].str);
+      token_list->tokens[i].str = NULL;
+    }
+  }
+  free(token_list->tokens);
+  token_list->tokens = NULL;
+  free(token_list);
+}
+
+TokenList *tokenize(const char *s) {
+  TokenList *token_list = token_list_init();
+  const size_t tokens_allocator_step = 10;
+  char *s_copy = strdup(s);
+  for (char *word = strtok(s_copy, " "); word != NULL;
+       word = strtok(NULL, " ")) {
+    if (token_list->tokens_n % tokens_allocator_step == 0) {
+      token_list->tokens = realloc(
+          token_list->tokens,
+          (token_list->tokens_n + tokens_allocator_step) * sizeof(Token));
+    }
+    token_list->tokens[token_list->tokens_n].type = TOKEN_TYPE_STR;
+    token_list->tokens[token_list->tokens_n].str = strdup(word);
+    token_list->tokens_n++;
+  }
+  free(s_copy);
+  return token_list;
+}
+
+void run_tests(void) {
+  {
+    TokenList *token_list = tokenize("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15");
+    assert(token_list->tokens_n == 15);
+    for (size_t i = 0; i < token_list->tokens_n; i++) {
+      assert(token_list->tokens[i].type == TOKEN_TYPE_STR);
+    }
+    assert(str_eq(token_list->tokens[0].str, "1"));
+    assert(str_eq(token_list->tokens[1].str, "2"));
+    assert(str_eq(token_list->tokens[13].str, "14"));
+    assert(str_eq(token_list->tokens[14].str, "15"));
+    token_list_destroy(token_list);
+  }
+  {
+    TokenList *token_list = tokenize("Alice & (Bob |Charlie)");
+    assert(token_list->tokens_n == 7);
+
+    assert(token_list->tokens[0].type == TOKEN_TYPE_STR);
+    assert(str_eq(token_list->tokens[0].str, "Alice"));
+
+    assert(token_list->tokens[1].type == TOKEN_TYPE_OP_AND);
+    assert(token_list->tokens[1].str == NULL);
+
+    assert(token_list->tokens[2].type == TOKEN_TYPE_PAR_OPEN);
+    assert(token_list->tokens[2].str == NULL);
+
+    assert(token_list->tokens[3].type == TOKEN_TYPE_STR);
+    assert(str_eq(token_list->tokens[3].str, "Bob"));
+
+    assert(token_list->tokens[4].type == TOKEN_TYPE_OP_OR);
+    assert(token_list->tokens[4].str == NULL);
+
+    assert(token_list->tokens[5].type == TOKEN_TYPE_STR);
+    assert(str_eq(token_list->tokens[5].str, "Charlie"));
+
+    assert(token_list->tokens[6].type == TOKEN_TYPE_PAR_CLOSE);
+    assert(token_list->tokens[6].str == NULL);
+
+    token_list_destroy(token_list);
+  }
+  printf("\x1b[32m"); // green text
+  printf("\u2713 ");  // Unicode check mark
+  printf("\x1b[0m");  // Reset text color to default
+  printf("All tests passed\n");
 }
 
 int evaluate(const char *const input) {
