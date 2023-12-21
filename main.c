@@ -45,6 +45,7 @@ int evaluate(const char *const input) {
     print_help_command('d', "del", "Delete an entry");
     print_help_command('h', "help", "Read this help");
     print_help_command('l', "list", "List all entries");
+    print_help_command('s', "search", "Search for an entry");
     print_help_command('q', "quit", "Quit the application");
   } else if (str_eq(input, "add") || str_eq(input, "a")) {
     if (entries_n == MAX_ENTRIES_N) {
@@ -102,6 +103,24 @@ int evaluate(const char *const input) {
       break;
     default:
       printf("Total: %zu entries\n", entries_n);
+    }
+  } else if (str_eq(input, "search") || str_eq(input, "s")) {
+    printf("Search: ");
+    size_t pattern_initial_size = 256;
+    char *pattern = malloc(pattern_initial_size);
+    if (getline(&pattern, &pattern_initial_size, stdin) == -1) {
+      free(pattern);
+      fprintf(stderr, "Failed to read search pattern! Try again\n");
+      return 0;
+    }
+    char *end = strchr(pattern, '\n');
+    if (end != NULL) {
+      *end = '\0';
+    }
+    for (size_t i = 0; i < entries_n; i++) {
+      if (strstr(entries[i], pattern) != NULL) {
+        printf("%zu) %s\n", i, entries[i]);
+      }
     }
   } else if (str_eq(input, "quit") || str_eq(input, "q")) {
     return 1;

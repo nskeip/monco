@@ -10,8 +10,8 @@ ROADMAP
 [.] Commands:
   - [x] add
   - [x] del
-  - [ ] select (substring)
-  - [ ] select operators: &, |, (), !
+  - [x] search (substring)
+  - [ ] search with operators: &, |, (), !
 [ ] Storage of documents (similar to MongoDB) where values are strings.
 [ ] More sophisticated types:
   - [ ] integers,
