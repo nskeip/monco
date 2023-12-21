@@ -51,7 +51,7 @@ int evaluate(const char *const input) {
       puts("Maximum number of entries reached! Will not add more.");
       return 0;
     }
-    puts("Enter text:");
+    printf("Enter text: ");
     size_t entry_initial_size = 256;
     char *entry = malloc(entry_initial_size);
     if (getline(&entry, &entry_initial_size, stdin) == -1) {
@@ -69,7 +69,7 @@ int evaluate(const char *const input) {
       puts("No entries to delete!");
       return 0;
     }
-    puts("Enter number:");
+    printf("Enter number: ");
     size_t entry_number;
     if (scanf("%zu", &entry_number) != 1) {
       fprintf(stderr, "Kinda strange entry number. Are you using stilys?\n");
