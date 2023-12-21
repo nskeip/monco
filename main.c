@@ -43,8 +43,8 @@ int evaluate(const char *const input) {
     puts("Available commands:");
     print_help_command('a', "add", "Add an entry");
     print_help_command('d', "del", "Delete an entry");
-    print_help_command('l', "list", "List all entries");
     print_help_command('h', "help", "Read this help");
+    print_help_command('l', "list", "List all entries");
     print_help_command('q', "quit", "Quit the application");
   } else if (str_eq(input, "add") || str_eq(input, "a")) {
     if (entries_n == MAX_ENTRIES_N) {
@@ -115,8 +115,8 @@ int main(int argc, char *argv[]) {
   if (argc > 1) {
     if (str_eq(argv[1], "--help") || str_eq(argv[1], "-h")) {
       puts("Usage:");
-      print_help_command('t', "--test", "Run tests");
       print_help_command('h', "--help", "Display this help message");
+      print_help_command('t', "--test", "Run tests");
       return EXIT_SUCCESS;
     }
     if (str_eq(argv[1], "--test") || str_eq(argv[1], "-t")) {
