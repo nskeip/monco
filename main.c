@@ -47,6 +47,9 @@ typedef struct {
 
 TokenList *token_list_init(void) {
   TokenList *token_list = malloc(sizeof(TokenList));
+  if (token_list == NULL) {
+    return NULL;
+  }
   token_list->tokens_n = 0;
   token_list->tokens = NULL;
   return token_list;
@@ -67,6 +70,7 @@ void token_list_destroy(TokenList *token_list) {
 TokenList *tokenize(const char *s) {
   TokenList *result = token_list_init();
   if (result == NULL) {
+    fprintf(stderr, "Failed to allocate memory for token list!\n");
     return NULL;
   }
   while (*s != '\0') {
