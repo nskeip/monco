@@ -65,22 +65,59 @@ void token_list_destroy(TokenList *token_list) {
 }
 
 TokenList *tokenize(const char *s) {
-  TokenList *token_list = token_list_init();
-  const size_t tokens_allocator_step = 10;
-  char *s_copy = strdup(s);
-  for (char *word = strtok(s_copy, " "); word != NULL;
-       word = strtok(NULL, " ")) {
-    if (token_list->tokens_n % tokens_allocator_step == 0) {
-      token_list->tokens = realloc(
-          token_list->tokens,
-          (token_list->tokens_n + tokens_allocator_step) * sizeof(Token));
-    }
-    token_list->tokens[token_list->tokens_n].type = TOKEN_TYPE_STR;
-    token_list->tokens[token_list->tokens_n].str = strdup(word);
-    token_list->tokens_n++;
+  TokenList *result = token_list_init();
+  if (result == NULL) {
+    return NULL;
   }
-  free(s_copy);
-  return token_list;
+  while (*s != '\0') {
+    if (*s == ' ') {
+      s++;
+      continue;
+    }
+
+    const size_t resize_block_size = 10;
+    if (result->tokens_n % resize_block_size == 0) {
+      result->tokens =
+          realloc(result->tokens,
+                  (result->tokens_n + resize_block_size) * sizeof(Token));
+    }
+
+    switch (*s) {
+    case '|':
+      result->tokens[result->tokens_n++] =
+          (Token){.type = TOKEN_TYPE_OP_OR, .str = NULL};
+      s++;
+      break;
+    case '&':
+      result->tokens[result->tokens_n++] =
+          (Token){.type = TOKEN_TYPE_OP_AND, .str = NULL};
+      s++;
+      break;
+    case '(':
+      result->tokens[result->tokens_n++] =
+          (Token){.type = TOKEN_TYPE_PAR_OPEN, .str = NULL};
+      s++;
+      break;
+    case ')':
+      result->tokens[result->tokens_n++] =
+          (Token){.type = TOKEN_TYPE_PAR_CLOSE, .str = NULL};
+      s++;
+      break;
+    default: {
+      size_t word_len = strcspn(s, " |&()");
+      char *word_copy = strndup(s, word_len);
+      if (word_copy == NULL) {
+        fprintf(stderr, "Failed to allocate memory for token! %s\n", s);
+        token_list_destroy(result);
+        return NULL;
+      }
+      result->tokens[result->tokens_n++] =
+          (Token){.type = TOKEN_TYPE_STR, .str = word_copy};
+      s += word_len;
+    }
+    }
+  }
+  return result;
 }
 
 void run_tests(void) {
