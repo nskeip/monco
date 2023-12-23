@@ -170,7 +170,7 @@ void run_tests(void) {
   printf("All tests passed\n");
 }
 
-int evaluate(const char *const input) {
+int process_user_input(const char *const input) {
   if (*input == '\0') {
     return 0;
   }
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
     if (end != NULL) {
       *end = '\0';
     }
-    if (evaluate(input) != 0) {
+    if (process_user_input(input) != 0) {
       break;
     }
   }
