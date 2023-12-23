@@ -124,6 +124,104 @@ TokenList *tokenize(const char *s) {
   return result;
 }
 
+int precedence(TokenType type) {
+  switch (type) {
+  case TOKEN_TYPE_OP_OR:
+    return 1;
+  case TOKEN_TYPE_OP_AND:
+    return 2;
+  default:
+    return 0;
+  }
+}
+
+Token token_list_peek(TokenList *token_list) {
+  assert(token_list->tokens_n != 0);
+  return token_list->tokens[token_list->tokens_n - 1];
+}
+
+void token_list_drop(TokenList *token_list) {
+  assert(token_list->tokens_n != 0);
+  token_list->tokens[--token_list->tokens_n] = (Token){0};
+}
+
+TokenList *make_postfix_notation(const TokenList *const token_list) {
+  TokenList *output_queue = token_list_init();
+  TokenList *op_stack = token_list_init();
+
+  // allocating maximum possible sizes
+  output_queue->tokens = calloc(token_list->tokens_n, sizeof(Token));
+  op_stack->tokens = calloc(token_list->tokens_n, sizeof(Token));
+
+  for (size_t i = 0; i < token_list->tokens_n; i++) {
+    switch (token_list->tokens[i].type) {
+    case TOKEN_TYPE_STR:
+      output_queue->tokens[output_queue->tokens_n++] = token_list->tokens[i];
+      break;
+    case TOKEN_TYPE_OP_OR:
+    case TOKEN_TYPE_OP_AND: {
+      while (op_stack->tokens_n != 0) {
+        Token op2 = token_list_peek(op_stack);
+        if (op2.type == TOKEN_TYPE_PAR_OPEN) {
+          break;
+        }
+        if (precedence(token_list->tokens[i].type) <= precedence(op2.type)) {
+          // left-associativity check should be in a separate if
+          // but both operators are left-associative (even more: they are
+          // associative) - so we just put `<=` instead of `<` here.
+          break;
+        }
+        // add to queue
+        output_queue->tokens[output_queue->tokens_n++] = op2;
+        token_list_drop(op_stack);
+      }
+      // o1 to stack
+      op_stack->tokens[op_stack->tokens_n++] = token_list->tokens[i];
+      break;
+    }
+    case TOKEN_TYPE_PAR_OPEN:
+      // push to stack
+      op_stack->tokens[op_stack->tokens_n++] = token_list->tokens[i];
+      break;
+    case TOKEN_TYPE_PAR_CLOSE: {
+      while (op_stack->tokens_n != 0) {
+        Token op_from_stack = token_list_peek(op_stack);
+        if (op_from_stack.type == TOKEN_TYPE_PAR_OPEN) {
+          break;
+        }
+        // from stack to queue
+        output_queue->tokens[output_queue->tokens_n++] = op_from_stack;
+        token_list_drop(op_stack);
+      }
+      if (op_stack->tokens_n == 0 ||
+          token_list_peek(op_stack).type != TOKEN_TYPE_PAR_OPEN) {
+        fprintf(stderr, "Mismatched parentheses!\n");
+        goto clean_up_err;
+      }
+      token_list_drop(op_stack); // drop '('
+      /* we don't need function-before-( -- so just skipping it */
+      break;
+    }
+    }
+  }
+
+  for (size_t i = op_stack->tokens_n - 1; i >= 0; --i) {
+    if (op_stack->tokens[i].type == TOKEN_TYPE_PAR_OPEN) {
+      fprintf(stderr, "Mismatched parentheses!\n");
+      goto clean_up_err;
+    }
+    output_queue->tokens[output_queue->tokens_n++] = op_stack->tokens[i];
+  }
+
+  token_list_destroy(op_stack);
+  return output_queue;
+
+clean_up_err:
+  token_list_destroy(output_queue);
+  token_list_destroy(op_stack);
+  return NULL;
+}
+
 void run_tests(void) {
   {
     TokenList *token_list = tokenize("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15");
