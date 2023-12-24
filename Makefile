@@ -29,7 +29,7 @@ test: clean $(EXECUTABLE)
 	./$(EXECUTABLE) -t
 
 valgrind-test: clean $(EXECUTABLE)
-	valgrind --leak-check=full ./$(EXECUTABLE) -t
+	valgrind --leak-check=full -s ./$(EXECUTABLE) -t
 
 run: $(EXECUTABLE)
 	./$(EXECUTABLE)
