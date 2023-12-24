@@ -215,7 +215,8 @@ TokenList *make_postfix_notation(const TokenList *const token_list) {
     }
   }
 
-  for (size_t i = op_stack->tokens_n - 1; i >= 0; --i) {
+  // going backwards, should know negative numbers :)
+  for (int i = op_stack->tokens_n - 1; i >= 0; --i) {
     if (op_stack->tokens[i].type == TOKEN_TYPE_PAR_OPEN) {
       fprintf(stderr, "Mismatched parentheses (while building output)!\n");
       goto clean_up_err;
