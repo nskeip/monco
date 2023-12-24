@@ -114,23 +114,26 @@ TokenList *tokenize(const char *s) {
       s++;
       break;
     default: {
-      size_t word_len_with_right_spaces = strcspn(s, "|&()");
-      assert(word_len_with_right_spaces != 0);
+      size_t token_str_len_with_right_spaces = strcspn(s, "|&()");
+      assert(token_str_len_with_right_spaces != 0);
 
-      size_t word_len_trimmed = word_len_with_right_spaces;
-      while (word_len_trimmed > 0 && s[word_len_trimmed - 1] == ' ') {
-        word_len_trimmed--;
+      int token_str_len_trimmed = token_str_len_with_right_spaces;
+      while (token_str_len_trimmed > 0 && s[token_str_len_trimmed - 1] == ' ') {
+        token_str_len_trimmed--;
       }
 
-      char *word_copy = strndup(s, word_len_trimmed);
-      if (word_copy == NULL) {
-        fprintf(stderr, "Failed to allocate memory for token! %s\n", s);
-        token_list_destroy(result);
-        return NULL;
+      char *token_str = NULL;
+      if (token_str_len_trimmed != 0) {
+        token_str = strndup(s, token_str_len_trimmed);
+        if (token_str == NULL) {
+          fprintf(stderr, "Failed to allocate memory for token! %s\n", s);
+          token_list_destroy(result);
+          return NULL;
+        }
       }
       result->tokens[result->tokens_n++] =
-          (Token){.type = TOKEN_TYPE_STR, .str = word_copy};
-      s += word_len_with_right_spaces;
+          (Token){.type = TOKEN_TYPE_STR, .str = token_str};
+      s += token_str_len_with_right_spaces;
     }
     }
   }
