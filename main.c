@@ -68,6 +68,7 @@ void token_list_destroy(TokenList *token_list) {
 }
 
 TokenList *tokenize(const char *s) {
+  // This treats whitespace after a word as a part of a token
   TokenList *result = token_list_init();
   if (result == NULL) {
     fprintf(stderr, "Failed to allocate memory for token list!\n");
@@ -75,6 +76,8 @@ TokenList *tokenize(const char *s) {
   }
   while (*s != '\0') {
     if (*s == ' ') {
+      // dealing with the "leftmost" whitespaces, not belonging
+      // to any token
       s++;
       continue;
     }
@@ -108,8 +111,15 @@ TokenList *tokenize(const char *s) {
       s++;
       break;
     default: {
-      size_t word_len = strcspn(s, " |&()");
-      char *word_copy = strndup(s, word_len);
+      size_t word_len_with_right_spaces = strcspn(s, "|&()");
+      assert(word_len_with_right_spaces != 0);
+
+      size_t word_len_trimmed = word_len_with_right_spaces;
+      while (word_len_trimmed > 0 && s[word_len_trimmed - 1] == ' ') {
+        word_len_trimmed--;
+      }
+
+      char *word_copy = strndup(s, word_len_trimmed);
       if (word_copy == NULL) {
         fprintf(stderr, "Failed to allocate memory for token! %s\n", s);
         token_list_destroy(result);
@@ -117,7 +127,7 @@ TokenList *tokenize(const char *s) {
       }
       result->tokens[result->tokens_n++] =
           (Token){.type = TOKEN_TYPE_STR, .str = word_copy};
-      s += word_len;
+      s += word_len_with_right_spaces;
     }
     }
   }
@@ -224,19 +234,7 @@ clean_up_err:
 
 void run_tests(void) {
   {
-    TokenList *token_list = tokenize("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15");
-    assert(token_list->tokens_n == 15);
-    for (size_t i = 0; i < token_list->tokens_n; i++) {
-      assert(token_list->tokens[i].type == TOKEN_TYPE_STR);
-    }
-    assert(str_eq(token_list->tokens[0].str, "1"));
-    assert(str_eq(token_list->tokens[1].str, "2"));
-    assert(str_eq(token_list->tokens[13].str, "14"));
-    assert(str_eq(token_list->tokens[14].str, "15"));
-    token_list_destroy(token_list);
-  }
-  {
-    TokenList *token_list = tokenize("Alice & (Bob |Charlie)");
+    TokenList *token_list = tokenize("Alice & (Bob |Charlie Chaplin)");
     assert(token_list->tokens_n == 7);
 
     assert(token_list->tokens[0].type == TOKEN_TYPE_STR);
@@ -255,7 +253,7 @@ void run_tests(void) {
     assert(token_list->tokens[4].str == NULL);
 
     assert(token_list->tokens[5].type == TOKEN_TYPE_STR);
-    assert(str_eq(token_list->tokens[5].str, "Charlie"));
+    assert(str_eq(token_list->tokens[5].str, "Charlie Chaplin"));
 
     assert(token_list->tokens[6].type == TOKEN_TYPE_PAR_CLOSE);
     assert(token_list->tokens[6].str == NULL);
