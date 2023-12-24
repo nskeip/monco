@@ -286,6 +286,7 @@ void run_tests(void) {
 
     TokenList *pf_list = make_postfix_notation(token_list);
     assert(pf_list != NULL);
+    token_list_destroy(token_list);
   }
   printf("\x1b[32m"); // green text
   printf("\u2713 ");  // Unicode check mark
