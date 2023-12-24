@@ -282,8 +282,6 @@ void run_tests(void) {
   }
   {
     // A + B * C + D -> A B C * + D +
-    puts("Simple infix -> postfix:");
-    puts("Alice | Bob & Charlie | Dan -> Alice Bob Charlie & | Dan |");
     TokenList *token_list = tokenize("Alice | Bob & Charlie | Dan");
     assert(token_list->tokens_n == 7);
 
@@ -313,8 +311,6 @@ void run_tests(void) {
   }
   {
     // A + B * (C + D) -> A B C D + * +
-    puts("Infix with parentheses -> postfix:");
-    puts("Alice | Bob & (Charlie | Dan) -> Alice Bob Charlie Dan | & |");
     TokenList *token_list = tokenize("Alice | Bob & (Charlie | Dan)");
     assert(token_list->tokens_n == 9);
 
