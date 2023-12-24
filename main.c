@@ -55,7 +55,16 @@ TokenList *token_list_init(void) {
   return token_list;
 }
 
-void token_list_destroy(TokenList *token_list) {
+void token_list_destroy_shallow(TokenList *token_list) {
+  if (token_list == NULL) {
+    return;
+  }
+  free(token_list->tokens);
+  token_list->tokens = NULL;
+  free(token_list);
+}
+
+void token_list_destroy_deep(TokenList *token_list) {
   if (token_list == NULL) {
     return;
   }
@@ -65,9 +74,7 @@ void token_list_destroy(TokenList *token_list) {
       token_list->tokens[i].str = NULL;
     }
   }
-  free(token_list->tokens);
-  token_list->tokens = NULL;
-  free(token_list);
+  token_list_destroy_shallow(token_list);
 }
 
 TokenList *tokenize(const char *s) {
@@ -127,7 +134,7 @@ TokenList *tokenize(const char *s) {
         token_str = strndup(s, token_str_len_trimmed);
         if (token_str == NULL) {
           fprintf(stderr, "Failed to allocate memory for token! %s\n", s);
-          token_list_destroy(result);
+          token_list_destroy_deep(result);
           return NULL;
         }
       }
@@ -246,12 +253,12 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
     output_queue->tokens[output_queue->tokens_n++] = op_stack->tokens[i];
   }
 
-  token_list_destroy(op_stack);
+  token_list_destroy_shallow(op_stack);
   return output_queue;
 
 clean_up_err:
-  token_list_destroy(output_queue);
-  token_list_destroy(op_stack);
+  token_list_destroy_shallow(output_queue);
+  token_list_destroy_shallow(op_stack);
   return NULL;
 }
 
@@ -281,7 +288,7 @@ void run_tests(void) {
     assert(token_list->tokens[6].type == TOKEN_TYPE_PAR_CLOSE);
     assert(token_list->tokens[6].str == NULL);
 
-    token_list_destroy(token_list);
+    token_list_destroy_deep(token_list);
   }
   {
     // A + B * C + D -> A B C * + D +
@@ -310,7 +317,8 @@ void run_tests(void) {
 
     assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_OR);
 
-    token_list_destroy(token_list);
+    token_list_destroy_shallow(pf_list);
+    token_list_destroy_deep(token_list);
   }
   {
     // A + B * (C + D) -> A B C D + * +
@@ -337,7 +345,8 @@ void run_tests(void) {
     assert(pf_list->tokens[5].type == TOKEN_TYPE_OP_AND);
     assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_OR);
 
-    token_list_destroy(token_list);
+    token_list_destroy_shallow(pf_list);
+    token_list_destroy_deep(token_list);
   }
   printf("\x1b[32m"); // green text
   printf("\u2713 ");  // Unicode check mark
