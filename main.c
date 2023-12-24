@@ -205,7 +205,7 @@ TokenList *make_postfix_notation(const TokenList *const token_list) {
       }
       if (op_stack->tokens_n == 0 ||
           token_list_peek(op_stack).type != TOKEN_TYPE_PAR_OPEN) {
-        fprintf(stderr, "Mismatched parentheses!\n");
+        fprintf(stderr, "Mismatched parentheses (while processing tokens)!\n");
         goto clean_up_err;
       }
       token_list_drop_last_element(op_stack); // drop '('
@@ -217,7 +217,7 @@ TokenList *make_postfix_notation(const TokenList *const token_list) {
 
   for (size_t i = op_stack->tokens_n - 1; i >= 0; --i) {
     if (op_stack->tokens[i].type == TOKEN_TYPE_PAR_OPEN) {
-      fprintf(stderr, "Mismatched parentheses!\n");
+      fprintf(stderr, "Mismatched parentheses (while building output)!\n");
       goto clean_up_err;
     }
     output_queue->tokens[output_queue->tokens_n++] = op_stack->tokens[i];
