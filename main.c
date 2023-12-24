@@ -281,11 +281,63 @@ void run_tests(void) {
     token_list_destroy(token_list);
   }
   {
+    // A + B * C + D -> A B C * + D +
+    puts("Simple infix -> postfix:");
+    puts("Alice | Bob & Charlie | Dan -> Alice Bob Charlie & | Dan |");
+    TokenList *token_list = tokenize("Alice | Bob & Charlie | Dan");
+    assert(token_list->tokens_n == 7);
+
+    TokenList *pf_list = make_postfix_notation(token_list);
+    assert(pf_list != NULL);
+    assert(pf_list->tokens_n == 7);
+
+    assert(pf_list->tokens[0].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[0].str, "Alice"));
+
+    assert(pf_list->tokens[1].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[1].str, "Bob"));
+
+    assert(pf_list->tokens[2].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[2].str, "Charlie"));
+
+    assert(pf_list->tokens[3].type == TOKEN_TYPE_OP_AND);
+
+    assert(pf_list->tokens[4].type == TOKEN_TYPE_OP_OR);
+
+    assert(pf_list->tokens[5].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[5].str, "Dan"));
+
+    assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_OR);
+
+    token_list_destroy(token_list);
+  }
+  {
+    // A + B * (C + D) -> A B C D + * +
+    puts("Infix with parentheses -> postfix:");
+    puts("Alice | Bob & (Charlie | Dan) -> Alice Bob Charlie Dan | & |");
     TokenList *token_list = tokenize("Alice | Bob & (Charlie | Dan)");
     assert(token_list->tokens_n == 9);
 
     TokenList *pf_list = make_postfix_notation(token_list);
     assert(pf_list != NULL);
+    assert(pf_list->tokens_n == 7);
+
+    assert(pf_list->tokens[0].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[0].str, "Alice"));
+
+    assert(pf_list->tokens[1].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[1].str, "Bob"));
+
+    assert(pf_list->tokens[2].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[2].str, "Charlie"));
+
+    assert(pf_list->tokens[3].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[3].str, "Dan"));
+
+    assert(pf_list->tokens[4].type == TOKEN_TYPE_OP_OR);
+    assert(pf_list->tokens[5].type == TOKEN_TYPE_OP_AND);
+    assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_OR);
+
     token_list_destroy(token_list);
   }
   printf("\x1b[32m"); // green text
