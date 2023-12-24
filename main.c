@@ -56,6 +56,9 @@ TokenList *token_list_init(void) {
 }
 
 void token_list_destroy(TokenList *token_list) {
+  if (token_list == NULL) {
+    return;
+  }
   for (size_t i = 0; i < token_list->tokens_n; i++) {
     if (token_list->tokens[i].type == TOKEN_TYPE_STR) {
       free(token_list->tokens[i].str);
@@ -157,11 +160,27 @@ void token_list_drop_last_element(TokenList *token_list) {
 
 TokenList *make_postfix_notation(const TokenList *const token_list) {
   TokenList *output_queue = token_list_init();
+  if (output_queue == NULL) {
+    fprintf(stderr, "Failed to allocate memory for output queue!\n");
+    return NULL;
+  }
   TokenList *op_stack = token_list_init();
+  if (op_stack == NULL) {
+    fprintf(stderr, "Failed to allocate memory for op stack!\n");
+    goto clean_up_err;
+  }
 
   // allocating maximum possible sizes
   output_queue->tokens = calloc(token_list->tokens_n, sizeof(Token));
+  if (output_queue->tokens == NULL) {
+    fprintf(stderr, "Failed to allocate memory for output queue tokens!\n");
+    goto clean_up_err;
+  }
   op_stack->tokens = calloc(token_list->tokens_n, sizeof(Token));
+  if (op_stack->tokens == NULL) {
+    fprintf(stderr, "Failed to allocate memory for op stack tokens!\n");
+    goto clean_up_err;
+  }
 
   for (size_t i = 0; i < token_list->tokens_n; i++) {
     switch (token_list->tokens[i].type) {
