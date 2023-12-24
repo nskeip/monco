@@ -155,7 +155,7 @@ Token token_list_peek(TokenList *token_list) {
 
 void token_list_drop_last_element(TokenList *token_list) {
   assert(token_list->tokens_n != 0);
-  token_list->tokens[--token_list->tokens_n] = (Token){0};
+  memset(&token_list->tokens[--token_list->tokens_n], 0, sizeof(Token));
 }
 
 TokenList *make_postfix_notation(const TokenList *const token_list) {
