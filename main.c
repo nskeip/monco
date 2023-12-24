@@ -158,7 +158,7 @@ void token_list_drop_last_element(TokenList *token_list) {
   memset(&token_list->tokens[--token_list->tokens_n], 0, sizeof(Token));
 }
 
-TokenList *make_postfix_notation(const TokenList *const token_list) {
+TokenList *to_postfix_notation(const TokenList *const token_list) {
   TokenList *output_queue = token_list_init();
   if (output_queue == NULL) {
     fprintf(stderr, "Failed to allocate memory for output queue!\n");
@@ -287,7 +287,7 @@ void run_tests(void) {
     TokenList *token_list = tokenize("Alice | Bob & Charlie | Dan");
     assert(token_list->tokens_n == 7);
 
-    TokenList *pf_list = make_postfix_notation(token_list);
+    TokenList *pf_list = to_postfix_notation(token_list);
     assert(pf_list != NULL);
     assert(pf_list->tokens_n == 7);
 
@@ -318,7 +318,7 @@ void run_tests(void) {
     TokenList *token_list = tokenize("Alice | Bob & (Charlie | Dan)");
     assert(token_list->tokens_n == 9);
 
-    TokenList *pf_list = make_postfix_notation(token_list);
+    TokenList *pf_list = to_postfix_notation(token_list);
     assert(pf_list != NULL);
     assert(pf_list->tokens_n == 7);
 
