@@ -260,6 +260,13 @@ void run_tests(void) {
 
     token_list_destroy(token_list);
   }
+  {
+    TokenList *token_list = tokenize("Alice | Bob & (Charlie | Dan)");
+    assert(token_list->tokens_n == 9);
+
+    TokenList *pf_list = make_postfix_notation(token_list);
+    assert(pf_list != NULL);
+  }
   printf("\x1b[32m"); // green text
   printf("\u2713 ");  // Unicode check mark
   printf("\x1b[0m");  // Reset text color to default
