@@ -150,7 +150,7 @@ Token token_list_peek(TokenList *token_list) {
   return token_list->tokens[token_list->tokens_n - 1];
 }
 
-void token_list_drop(TokenList *token_list) {
+void token_list_drop_last_element(TokenList *token_list) {
   assert(token_list->tokens_n != 0);
   token_list->tokens[--token_list->tokens_n] = (Token){0};
 }
@@ -183,7 +183,7 @@ TokenList *make_postfix_notation(const TokenList *const token_list) {
         }
         // add to queue
         output_queue->tokens[output_queue->tokens_n++] = op2;
-        token_list_drop(op_stack);
+        token_list_drop_last_element(op_stack);
       }
       // o1 to stack
       op_stack->tokens[op_stack->tokens_n++] = token_list->tokens[i];
@@ -201,14 +201,14 @@ TokenList *make_postfix_notation(const TokenList *const token_list) {
         }
         // from stack to queue
         output_queue->tokens[output_queue->tokens_n++] = op_from_stack;
-        token_list_drop(op_stack);
+        token_list_drop_last_element(op_stack);
       }
       if (op_stack->tokens_n == 0 ||
           token_list_peek(op_stack).type != TOKEN_TYPE_PAR_OPEN) {
         fprintf(stderr, "Mismatched parentheses!\n");
         goto clean_up_err;
       }
-      token_list_drop(op_stack); // drop '('
+      token_list_drop_last_element(op_stack); // drop '('
       /* we don't need function-before-( -- so just skipping it */
       break;
     }
