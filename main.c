@@ -194,7 +194,7 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
         if (op2.type == TOKEN_TYPE_PAR_OPEN) {
           break;
         }
-        if (precedence(token_list->tokens[i].type) <= precedence(op2.type)) {
+        if (precedence(token_list->tokens[i].type) > precedence(op2.type)) {
           // left-associativity check should be in a separate if
           // but both operators are left-associative (even more: they are
           // associative) - so we just put `<=` instead of `<` here.
