@@ -292,19 +292,25 @@ bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
     case TOKEN_TYPE_OP_OR:
     case TOKEN_TYPE_OP_AND: {
       if (stack->tokens_n < 2) {
-        fprintf(stderr, "Not enough operands for operator!\n");
-        goto cleanup;
-      }
-      Token op2 = token_list_pop(stack);
-      assert(op2.type == TOKEN_TYPE_STR);
-      Token op1 = token_list_pop(stack);
-      assert(op1.type == TOKEN_TYPE_STR);
-      bool op1_result = strstr(str, op1.str) != NULL;
-      bool op2_result = strstr(str, op2.str) != NULL;
-      if (pf_list->tokens[i].type == TOKEN_TYPE_OP_OR) {
-        current = op1_result || op2_result;
+        Token t = token_list_pop(stack);
+        bool t_result = strstr(str, t.str) != NULL;
+        if (pf_list->tokens[i].type == TOKEN_TYPE_OP_OR) {
+          current = current || t_result;
+        } else {
+          current = current && t_result;
+        }
       } else {
-        current = op1_result && op2_result;
+        Token op2 = token_list_pop(stack);
+        assert(op2.type == TOKEN_TYPE_STR);
+        Token op1 = token_list_pop(stack);
+        assert(op1.type == TOKEN_TYPE_STR);
+        bool op1_result = strstr(str, op1.str) != NULL;
+        bool op2_result = strstr(str, op2.str) != NULL;
+        if (pf_list->tokens[i].type == TOKEN_TYPE_OP_OR) {
+          current = op1_result || op2_result;
+        } else {
+          current = op1_result && op2_result;
+        }
       }
       break;
     }
