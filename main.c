@@ -168,6 +168,12 @@ void token_list_drop_last_element(TokenList *token_list) {
   memset(&token_list->tokens[--token_list->tokens_n], 0, sizeof(Token));
 }
 
+Token token_list_pop(TokenList *token_list) {
+  Token result = token_list_peek(token_list);
+  token_list_drop_last_element(token_list);
+  return result;
+}
+
 TokenList *to_postfix_notation(const TokenList *const token_list) {
   TokenList *output_queue = token_list_init();
   if (output_queue == NULL) {
@@ -262,6 +268,57 @@ clean_up_err:
   return NULL;
 }
 
+bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
+                                        const char *str) {
+  bool current = true; // because empty set is a subset of any set
+  TokenList *stack = token_list_init();
+  if (stack == NULL) {
+    fprintf(stderr, "Failed to allocate memory for stack!\n");
+    goto cleanup;
+  }
+
+  // allocating maximum possible size
+  stack->tokens = calloc(pf_list->tokens_n, sizeof(Token));
+  if (stack->tokens == NULL) {
+    fprintf(stderr, "Failed to allocate memory for stack tokens!\n");
+    goto cleanup;
+  }
+
+  for (size_t i = 0; i < pf_list->tokens_n; i++) {
+    switch (pf_list->tokens[i].type) {
+    case TOKEN_TYPE_STR:
+      stack->tokens[stack->tokens_n++] = pf_list->tokens[i];
+      break;
+    case TOKEN_TYPE_OP_OR:
+    case TOKEN_TYPE_OP_AND: {
+      if (stack->tokens_n < 2) {
+        fprintf(stderr, "Not enough operands for operator!\n");
+        goto cleanup;
+      }
+      Token op2 = token_list_pop(stack);
+      assert(op2.type == TOKEN_TYPE_STR);
+      Token op1 = token_list_pop(stack);
+      assert(op1.type == TOKEN_TYPE_STR);
+      bool op1_result = strstr(str, op1.str) != NULL;
+      bool op2_result = strstr(str, op2.str) != NULL;
+      if (pf_list->tokens[i].type == TOKEN_TYPE_OP_OR) {
+        current = op1_result || op2_result;
+      } else {
+        current = op1_result && op2_result;
+      }
+      break;
+    }
+    default:
+      printf("Unknown token type: %d\n", pf_list->tokens[i].type);
+      assert(false);
+    }
+  }
+
+cleanup:
+  token_list_destroy_shallow(stack);
+  return current;
+}
+
 void run_tests(void) {
   {
     TokenList *token_list = tokenize("Alice & (Bob |Charlie Chaplin)");
@@ -316,6 +373,14 @@ void run_tests(void) {
     assert(str_eq(pf_list->tokens[5].str, "Dan"));
 
     assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_OR);
+
+    assert(eval_postfixed_tokens_as_predicate(pf_list, "Alice"));
+    assert(eval_postfixed_tokens_as_predicate(pf_list, "Dan"));
+    assert(eval_postfixed_tokens_as_predicate(pf_list, "Alice and Dan"));
+
+    assert(!eval_postfixed_tokens_as_predicate(pf_list, "Bob"));
+    assert(!eval_postfixed_tokens_as_predicate(pf_list, "Charlie"));
+    assert(eval_postfixed_tokens_as_predicate(pf_list, "Bob and Charlie"));
 
     token_list_destroy_shallow(pf_list);
     token_list_destroy_deep(token_list);
