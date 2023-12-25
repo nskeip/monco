@@ -17,7 +17,5 @@ ROADMAP
   - [ ] integers,
   - [ ] nested documents.
 [ ] Query language similar to MongoDB:
-  - [ ] select,
-  - [ ] & operator,
-  - [ ] | operator,
-  - [ ] ! operator.
+  - [ ] select with $and, $or, $not,
+  - [ ] add special type of filter with above operators.
