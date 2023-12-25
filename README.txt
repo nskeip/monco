@@ -11,7 +11,8 @@ ROADMAP
   - [x] add
   - [x] del
   - [x] search (substring)
-  - [ ] search with operators: &, |, (), !
+  - [ ] search with operators: &, |, ()
+  - [ ] search with not-operator: !
 [ ] Storage of documents (similar to MongoDB) where values are strings.
 [ ] More sophisticated types:
   - [ ] integers,
