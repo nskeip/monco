@@ -351,6 +351,17 @@ void run_tests(void) {
     assert(token_list->tokens[6].type == TOKEN_TYPE_PAR_CLOSE);
     assert(token_list->tokens[6].str == NULL);
 
+    TokenList *pf_list = to_postfix_notation(token_list);
+
+    assert(!eval_postfixed_tokens_as_predicate(pf_list, "Alice"));
+    assert(!eval_postfixed_tokens_as_predicate(pf_list, "Bob"));
+    assert(eval_postfixed_tokens_as_predicate(pf_list, "Alice and Bob"));
+
+    assert(!eval_postfixed_tokens_as_predicate(pf_list, "Alice and Charlie"));
+    assert(eval_postfixed_tokens_as_predicate(pf_list,
+                                              "Alice and Charlie Chaplin"));
+
+    token_list_destroy_shallow(pf_list);
     token_list_destroy_deep(token_list);
   }
   {
