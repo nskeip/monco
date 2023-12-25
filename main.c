@@ -293,7 +293,7 @@ bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
     case TOKEN_TYPE_OP_AND: {
       if (stack->tokens_n == 1) {
         Token t = token_list_pop(stack);
-        bool t_result = strstr(str, t.str) != NULL;
+        bool t_result = strcasestr(str, t.str) != NULL;
         if (pf_list->tokens[i].type == TOKEN_TYPE_OP_OR) {
           current = current || t_result;
         } else {
@@ -304,8 +304,8 @@ bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
         assert(op2.type == TOKEN_TYPE_STR);
         Token op1 = token_list_pop(stack);
         assert(op1.type == TOKEN_TYPE_STR);
-        bool op1_result = strstr(str, op1.str) != NULL;
-        bool op2_result = strstr(str, op2.str) != NULL;
+        bool op1_result = strcasestr(str, op1.str) != NULL;
+        bool op2_result = strcasestr(str, op2.str) != NULL;
         if (pf_list->tokens[i].type == TOKEN_TYPE_OP_OR) {
           current = op1_result || op2_result;
         } else {
@@ -519,7 +519,7 @@ int process_user_input(const char *const input) {
       *end = '\0';
     }
     for (size_t i = 0; i < entries_n; i++) {
-      if (strstr(entries[i], pattern) != NULL) {
+      if (strcasestr(entries[i], pattern) != NULL) {
         printf("%zu) %s\n", i, entries[i]);
       }
     }
