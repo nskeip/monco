@@ -291,7 +291,7 @@ bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
       break;
     case TOKEN_TYPE_OP_OR:
     case TOKEN_TYPE_OP_AND: {
-      if (stack->tokens_n < 2) {
+      if (stack->tokens_n == 1) {
         Token t = token_list_pop(stack);
         bool t_result = strstr(str, t.str) != NULL;
         if (pf_list->tokens[i].type == TOKEN_TYPE_OP_OR) {
