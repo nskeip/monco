@@ -518,11 +518,16 @@ int process_user_input(const char *const input) {
     if (end != NULL) {
       *end = '\0';
     }
+    // FIXME: 'a' finds Bob, 'bo' finds all
+    TokenList *token_list = tokenize(pattern);
+    TokenList *pf_list = to_postfix_notation(token_list);
     for (size_t i = 0; i < entries_n; i++) {
-      if (strcasestr(entries[i], pattern) != NULL) {
+      if (eval_postfixed_tokens_as_predicate(pf_list, entries[i])) {
         printf("%zu) %s\n", i, entries[i]);
       }
     }
+    token_list_destroy_shallow(pf_list);
+    token_list_destroy_deep(token_list);
   } else if (str_eq(input, "quit") || str_eq(input, "q")) {
     return 1;
   } else {
