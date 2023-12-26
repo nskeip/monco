@@ -270,6 +270,17 @@ clean_up_err:
 
 bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
                                         const char *str) {
+  if (pf_list == NULL) {
+    fprintf(stderr, "NULL postfix list!\n");
+    return false;
+  }
+  if (pf_list->tokens_n == 1) {
+    if (pf_list->tokens[0].type != TOKEN_TYPE_STR) {
+      fprintf(stderr, "Not a valid search pattern\n");
+      return false;
+    }
+    return strcasestr(str, pf_list->tokens[0].str) != NULL;
+  }
   bool current = true; // because empty set is a subset of any set
   TokenList *stack = token_list_init();
   if (stack == NULL) {
@@ -361,6 +372,17 @@ void run_tests(void) {
     assert(eval_postfixed_tokens_as_predicate(pf_list,
                                               "Alice and Charlie Chaplin"));
 
+    token_list_destroy_shallow(pf_list);
+    token_list_destroy_deep(token_list);
+  }
+  {
+    TokenList *token_list = tokenize("alice");
+    TokenList *pf_list = to_postfix_notation(token_list);
+    assert(pf_list != NULL);
+    assert(pf_list->tokens_n == 1);
+    assert(pf_list->tokens[0].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[0].str, "alice"));
+    assert(eval_postfixed_tokens_as_predicate(pf_list, "Alice in Wonderland"));
     token_list_destroy_shallow(pf_list);
     token_list_destroy_deep(token_list);
   }
