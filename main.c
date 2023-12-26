@@ -540,7 +540,7 @@ int process_user_input(const char *const input) {
     if (end != NULL) {
       *end = '\0';
     }
-    // FIXME: 'a' finds Bob, 'bo' finds all
+
     TokenList *token_list = tokenize(pattern);
     TokenList *pf_list = to_postfix_notation(token_list);
     for (size_t i = 0; i < entries_n; i++) {
