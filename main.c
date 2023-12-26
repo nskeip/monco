@@ -465,6 +465,36 @@ void run_tests(void) {
     token_list_destroy_shallow(pf_list);
     token_list_destroy_deep(token_list);
   }
+  {
+    TokenList *token_list = tokenize("!Alice | Bob & (Charlie | Dan)");
+    assert(token_list->tokens_n == 10);
+
+    TokenList *pf_list = to_postfix_notation(token_list);
+    assert(pf_list != NULL);
+    assert(pf_list->tokens_n == 8);
+
+    assert(pf_list->tokens[0].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[0].str, "Alice"));
+
+    assert(pf_list->tokens[1].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[1].str, "Bob"));
+
+    assert(pf_list->tokens[2].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[2].str, "Charlie"));
+
+    assert(pf_list->tokens[3].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[3].str, "Dan"));
+
+    assert(pf_list->tokens[4].type == TOKEN_TYPE_OP_OR);
+    assert(pf_list->tokens[5].type == TOKEN_TYPE_OP_AND);
+    assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_OR);
+    assert(pf_list->tokens[7].type == TOKEN_TYPE_OP_NOT);
+
+    // TODO: test !Alice
+
+    token_list_destroy_shallow(pf_list);
+    token_list_destroy_deep(token_list);
+  }
   printf("\x1b[32m"); // green text
   printf("\u2713 ");  // Unicode check mark
   printf("\x1b[0m");  // Reset text color to default
