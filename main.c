@@ -31,6 +31,7 @@ typedef enum {
   TOKEN_TYPE_STR,
   TOKEN_TYPE_OP_OR,
   TOKEN_TYPE_OP_AND,
+  TOKEN_TYPE_OP_NOT,
   TOKEN_TYPE_PAR_OPEN,
   TOKEN_TYPE_PAR_CLOSE,
 } TokenType;
@@ -110,6 +111,11 @@ TokenList *tokenize(const char *s) {
           (Token){.type = TOKEN_TYPE_OP_AND, .str = NULL};
       s++;
       break;
+    case '!':
+      result->tokens[result->tokens_n++] =
+          (Token){.type = TOKEN_TYPE_OP_NOT, .str = NULL};
+      s++;
+      break;
     case '(':
       result->tokens[result->tokens_n++] =
           (Token){.type = TOKEN_TYPE_PAR_OPEN, .str = NULL};
@@ -121,7 +127,7 @@ TokenList *tokenize(const char *s) {
       s++;
       break;
     default: {
-      size_t token_str_len_with_right_spaces = strcspn(s, "|&()");
+      size_t token_str_len_with_right_spaces = strcspn(s, "|&()!");
       assert(token_str_len_with_right_spaces != 0);
 
       int token_str_len_trimmed = token_str_len_with_right_spaces;
@@ -153,6 +159,8 @@ int precedence(TokenType type) {
     return 1;
   case TOKEN_TYPE_OP_AND:
     return 2;
+  case TOKEN_TYPE_OP_NOT:
+    return 3;
   default:
     return 0;
   }
@@ -204,16 +212,21 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
       output_queue->tokens[output_queue->tokens_n++] = token_list->tokens[i];
       break;
     case TOKEN_TYPE_OP_OR:
+    case TOKEN_TYPE_OP_NOT:
     case TOKEN_TYPE_OP_AND: {
       while (op_stack->tokens_n != 0) {
         Token op2 = token_list_peek(op_stack);
         if (op2.type == TOKEN_TYPE_PAR_OPEN) {
           break;
         }
-        if (precedence(token_list->tokens[i].type) > precedence(op2.type)) {
-          // left-associativity check should be in a separate if
-          // but both operators are left-associative (even more: they are
-          // associative) - so we just put `<=` instead of `<` here.
+        Token op1 = token_list->tokens[i];
+
+        int o1_precedence = precedence(op1.type);
+        int o2_precedence = precedence(op2.type);
+
+        if (!(o2_precedence > o1_precedence ||
+              (o2_precedence == o1_precedence &&
+               op1.type != TOKEN_TYPE_OP_NOT))) {
           break;
         }
         // add to queue
