@@ -1,6 +1,6 @@
 This is a tutorial on making a simple query language.
 
-It is called "Monco" because it is a parody on Mongo written on C.
+It is called "Monco" because it is a parody on Mongo written in C.
 
 ROADMAP
 
