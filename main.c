@@ -207,39 +207,39 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
   }
 
   for (size_t i = 0; i < token_list->tokens_n; i++) {
-    switch (token_list->tokens[i].type) {
+    Token current_op = token_list->tokens[i];
+    switch (current_op.type) {
     case TOKEN_TYPE_STR:
-      output_queue->tokens[output_queue->tokens_n++] = token_list->tokens[i];
+      output_queue->tokens[output_queue->tokens_n++] = current_op;
       break;
     case TOKEN_TYPE_OP_OR:
     case TOKEN_TYPE_OP_NOT:
     case TOKEN_TYPE_OP_AND: {
       while (op_stack->tokens_n != 0) {
-        Token op2 = token_list_peek(op_stack);
-        if (op2.type == TOKEN_TYPE_PAR_OPEN) {
+        Token stack_op = token_list_peek(op_stack);
+        if (stack_op.type == TOKEN_TYPE_PAR_OPEN) {
           break;
         }
-        Token op1 = token_list->tokens[i];
 
-        int o1_precedence = precedence(op1.type);
-        int o2_precedence = precedence(op2.type);
+        int current_op_prec = precedence(current_op.type);
+        int stack_op_prec = precedence(stack_op.type);
 
-        if (!(o2_precedence > o1_precedence ||
-              (o2_precedence == o1_precedence &&
-               op1.type != TOKEN_TYPE_OP_NOT))) {
+        if (!(stack_op_prec > current_op_prec ||
+              (stack_op_prec == current_op_prec &&
+               current_op.type != TOKEN_TYPE_OP_NOT))) {
           break;
         }
         // add to queue
-        output_queue->tokens[output_queue->tokens_n++] = op2;
+        output_queue->tokens[output_queue->tokens_n++] = stack_op;
         token_list_drop_last_element(op_stack);
       }
       // o1 to stack
-      op_stack->tokens[op_stack->tokens_n++] = token_list->tokens[i];
+      op_stack->tokens[op_stack->tokens_n++] = current_op;
       break;
     }
     case TOKEN_TYPE_PAR_OPEN:
       // push to stack
-      op_stack->tokens[op_stack->tokens_n++] = token_list->tokens[i];
+      op_stack->tokens[op_stack->tokens_n++] = current_op;
       break;
     case TOKEN_TYPE_PAR_CLOSE: {
       while (op_stack->tokens_n != 0) {
