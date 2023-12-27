@@ -313,6 +313,13 @@ bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
     case TOKEN_TYPE_STR:
       stack->tokens[stack->tokens_n++] = pf_list->tokens[i];
       break;
+    case TOKEN_TYPE_OP_NOT: {
+      Token t = token_list_pop(stack);
+      assert(t.type == TOKEN_TYPE_STR);
+      bool t_result = strcasestr(str, t.str) != NULL;
+      current = current && !t_result;
+      break;
+    }
     case TOKEN_TYPE_OP_OR:
     case TOKEN_TYPE_OP_AND: {
       if (stack->tokens_n == 1) {
@@ -466,6 +473,29 @@ void run_tests(void) {
     token_list_destroy_deep(token_list);
   }
   {
+    TokenList *token_list = tokenize("!Alice | Bob");
+    assert(token_list->tokens_n == 4);
+
+    TokenList *pf_list = to_postfix_notation(token_list);
+    assert(pf_list != NULL);
+    assert(pf_list->tokens_n == 4);
+
+    assert(pf_list->tokens[0].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[0].str, "Alice"));
+
+    assert(pf_list->tokens[1].type == TOKEN_TYPE_OP_NOT);
+
+    assert(pf_list->tokens[2].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[2].str, "Bob"));
+
+    assert(pf_list->tokens[3].type == TOKEN_TYPE_OP_OR);
+
+    assert(!eval_postfixed_tokens_as_predicate(pf_list, "Alice"));
+
+    token_list_destroy_shallow(pf_list);
+    token_list_destroy_deep(token_list);
+  }
+  {
     TokenList *token_list = tokenize("!Alice | Bob & (Charlie | Dan)");
     assert(token_list->tokens_n == 10);
 
@@ -476,21 +506,23 @@ void run_tests(void) {
     assert(pf_list->tokens[0].type == TOKEN_TYPE_STR);
     assert(str_eq(pf_list->tokens[0].str, "Alice"));
 
-    assert(pf_list->tokens[1].type == TOKEN_TYPE_STR);
-    assert(str_eq(pf_list->tokens[1].str, "Bob"));
+    assert(pf_list->tokens[1].type == TOKEN_TYPE_OP_NOT);
 
     assert(pf_list->tokens[2].type == TOKEN_TYPE_STR);
-    assert(str_eq(pf_list->tokens[2].str, "Charlie"));
+    assert(str_eq(pf_list->tokens[2].str, "Bob"));
 
     assert(pf_list->tokens[3].type == TOKEN_TYPE_STR);
-    assert(str_eq(pf_list->tokens[3].str, "Dan"));
+    assert(str_eq(pf_list->tokens[3].str, "Charlie"));
 
-    assert(pf_list->tokens[4].type == TOKEN_TYPE_OP_OR);
-    assert(pf_list->tokens[5].type == TOKEN_TYPE_OP_AND);
-    assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_OR);
-    assert(pf_list->tokens[7].type == TOKEN_TYPE_OP_NOT);
+    assert(pf_list->tokens[4].type == TOKEN_TYPE_STR);
+    assert(str_eq(pf_list->tokens[4].str, "Dan"));
 
-    // TODO: test !Alice
+    assert(pf_list->tokens[5].type == TOKEN_TYPE_OP_OR);
+    assert(pf_list->tokens[6].type == TOKEN_TYPE_OP_AND);
+    assert(pf_list->tokens[7].type == TOKEN_TYPE_OP_OR);
+
+    // FIXME: OR and AND don't work
+    assert(!eval_postfixed_tokens_as_predicate(pf_list, "Alice"));
 
     token_list_destroy_shallow(pf_list);
     token_list_destroy_deep(token_list);
