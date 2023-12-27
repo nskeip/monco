@@ -207,10 +207,10 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
   }
 
   for (size_t i = 0; i < token_list->tokens_n; i++) {
-    Token current_op = token_list->tokens[i];
-    switch (current_op.type) {
+    Token current_tok = token_list->tokens[i];
+    switch (current_tok.type) {
     case TOKEN_TYPE_STR:
-      output_queue->tokens[output_queue->tokens_n++] = current_op;
+      output_queue->tokens[output_queue->tokens_n++] = current_tok;
       break;
     case TOKEN_TYPE_OP_OR:
     case TOKEN_TYPE_OP_NOT:
@@ -221,12 +221,12 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
           break;
         }
 
-        int current_op_prec = precedence(current_op.type);
+        int current_tok_prec = precedence(current_tok.type);
         int stack_op_prec = precedence(stack_op.type);
 
-        if (!(stack_op_prec > current_op_prec ||
-              (stack_op_prec == current_op_prec &&
-               current_op.type != TOKEN_TYPE_OP_NOT))) {
+        if (!(stack_op_prec > current_tok_prec ||
+              (stack_op_prec == current_tok_prec &&
+               current_tok.type != TOKEN_TYPE_OP_NOT))) {
           break;
         }
         // add to queue
@@ -234,12 +234,12 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
         token_list_drop_last_element(op_stack);
       }
       // o1 to stack
-      op_stack->tokens[op_stack->tokens_n++] = current_op;
+      op_stack->tokens[op_stack->tokens_n++] = current_tok;
       break;
     }
     case TOKEN_TYPE_PAR_OPEN:
       // push to stack
-      op_stack->tokens[op_stack->tokens_n++] = current_op;
+      op_stack->tokens[op_stack->tokens_n++] = current_tok;
       break;
     case TOKEN_TYPE_PAR_CLOSE: {
       while (op_stack->tokens_n != 0) {
