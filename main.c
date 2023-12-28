@@ -80,6 +80,22 @@ void token_list_destroy_deep(TokenList *token_list) {
   token_list_destroy_shallow(token_list);
 }
 
+Token token_list_peek(TokenList *token_list) {
+  assert(token_list->tokens_n != 0);
+  return token_list->tokens[token_list->tokens_n - 1];
+}
+
+void token_list_drop_last_element(TokenList *token_list) {
+  assert(token_list->tokens_n != 0);
+  memset(&token_list->tokens[--token_list->tokens_n], 0, sizeof(Token));
+}
+
+Token token_list_pop(TokenList *token_list) {
+  Token result = token_list_peek(token_list);
+  token_list_drop_last_element(token_list);
+  return result;
+}
+
 TokenList *tokenize(const char *s) {
   // This treats whitespace after a word as a part of a token
   TokenList *result = token_list_init();
@@ -166,22 +182,6 @@ int precedence(TokenType type) {
   default:
     return 0;
   }
-}
-
-Token token_list_peek(TokenList *token_list) {
-  assert(token_list->tokens_n != 0);
-  return token_list->tokens[token_list->tokens_n - 1];
-}
-
-void token_list_drop_last_element(TokenList *token_list) {
-  assert(token_list->tokens_n != 0);
-  memset(&token_list->tokens[--token_list->tokens_n], 0, sizeof(Token));
-}
-
-Token token_list_pop(TokenList *token_list) {
-  Token result = token_list_peek(token_list);
-  token_list_drop_last_element(token_list);
-  return result;
 }
 
 TokenList *to_postfix_notation(const TokenList *const token_list) {
