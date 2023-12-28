@@ -96,6 +96,10 @@ Token token_list_pop(TokenList *token_list) {
   return result;
 }
 
+void token_list_push(TokenList *token_list, Token new_token) {
+  token_list->tokens[token_list->tokens_n++] = new_token;
+}
+
 TokenList *tokenize(const char *s) {
   // This treats whitespace after a word as a part of a token
   TokenList *result = token_list_init();
@@ -120,28 +124,25 @@ TokenList *tokenize(const char *s) {
 
     switch (*s) {
     case '|':
-      result->tokens[result->tokens_n++] =
-          (Token){.type = TOKEN_TYPE_OP_OR, .str = NULL};
+      token_list_push(result, (Token){.type = TOKEN_TYPE_OP_OR, .str = NULL});
       s++;
       break;
     case '&':
-      result->tokens[result->tokens_n++] =
-          (Token){.type = TOKEN_TYPE_OP_AND, .str = NULL};
+      token_list_push(result, (Token){.type = TOKEN_TYPE_OP_AND, .str = NULL});
       s++;
       break;
     case '!':
-      result->tokens[result->tokens_n++] =
-          (Token){.type = TOKEN_TYPE_OP_NOT, .str = NULL};
+      token_list_push(result, (Token){.type = TOKEN_TYPE_OP_NOT, .str = NULL});
       s++;
       break;
     case '(':
-      result->tokens[result->tokens_n++] =
-          (Token){.type = TOKEN_TYPE_PAR_OPEN, .str = NULL};
+      token_list_push(result,
+                      (Token){.type = TOKEN_TYPE_PAR_OPEN, .str = NULL});
       s++;
       break;
     case ')':
-      result->tokens[result->tokens_n++] =
-          (Token){.type = TOKEN_TYPE_PAR_CLOSE, .str = NULL};
+      token_list_push(result,
+                      (Token){.type = TOKEN_TYPE_PAR_CLOSE, .str = NULL});
       s++;
       break;
     default: {
@@ -162,8 +163,8 @@ TokenList *tokenize(const char *s) {
           return NULL;
         }
       }
-      result->tokens[result->tokens_n++] =
-          (Token){.type = TOKEN_TYPE_STR, .str = token_str};
+      token_list_push(result,
+                      (Token){.type = TOKEN_TYPE_STR, .str = token_str});
       s += token_str_len_with_right_spaces;
     }
     }
@@ -212,7 +213,7 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
     Token current_tok = token_list->tokens[i];
     switch (current_tok.type) {
     case TOKEN_TYPE_STR:
-      output_queue->tokens[output_queue->tokens_n++] = current_tok;
+      token_list_push(output_queue, current_tok);
       break;
     case TOKEN_TYPE_OP_OR:
     case TOKEN_TYPE_OP_NOT:
@@ -232,16 +233,16 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
           break;
         }
         // add to queue
-        output_queue->tokens[output_queue->tokens_n++] = stack_op;
+        token_list_push(output_queue, stack_op);
         token_list_drop_last_element(op_stack);
       }
       // o1 to stack
-      op_stack->tokens[op_stack->tokens_n++] = current_tok;
+      token_list_push(op_stack, current_tok);
       break;
     }
     case TOKEN_TYPE_PAR_OPEN:
       // push to stack
-      op_stack->tokens[op_stack->tokens_n++] = current_tok;
+      token_list_push(op_stack, current_tok);
       break;
     case TOKEN_TYPE_PAR_CLOSE: {
       while (op_stack->tokens_n != 0) {
@@ -250,7 +251,7 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
           break;
         }
         // from stack to queue
-        output_queue->tokens[output_queue->tokens_n++] = op_from_stack;
+        token_list_push(output_queue, op_from_stack);
         token_list_drop_last_element(op_stack);
       }
       if (op_stack->tokens_n == 0 ||
@@ -274,7 +275,7 @@ TokenList *to_postfix_notation(const TokenList *const token_list) {
       fprintf(stderr, "Mismatched parentheses (while building output)!\n");
       goto clean_up_err;
     }
-    output_queue->tokens[output_queue->tokens_n++] = op_stack->tokens[i];
+    token_list_push(output_queue, op_stack->tokens[i]);
   }
 
   token_list_destroy_shallow(op_stack);
@@ -317,21 +318,20 @@ bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
     Token current_tok = pf_list->tokens[i];
     switch (current_tok.type) {
     case TOKEN_TYPE_STR:
-      stack->tokens[stack->tokens_n++] = current_tok;
+      token_list_push(stack, current_tok);
       break;
     case TOKEN_TYPE_OP_NOT: {
       Token stack_token = token_list_pop(stack);
       if (stack_token.type == TOKEN_TYPE_STR) {
         bool str_of_token_found = strcasestr(str, stack_token.str) != NULL;
-        stack->tokens[stack->tokens_n++] = (Token){
-            .type = (str_of_token_found) ? TOKEN_TYPE_FALSE : TOKEN_TYPE_TRUE,
-            .str = NULL};
+        token_list_push(stack,
+                        (Token){.type = (str_of_token_found) ? TOKEN_TYPE_FALSE
+                                                             : TOKEN_TYPE_TRUE,
+                                .str = NULL});
       } else if (stack_token.type == TOKEN_TYPE_TRUE) {
-        stack->tokens[stack->tokens_n++] =
-            (Token){.type = TOKEN_TYPE_FALSE, .str = NULL};
+        token_list_push(stack, (Token){.type = TOKEN_TYPE_FALSE, .str = NULL});
       } else if (stack_token.type == TOKEN_TYPE_FALSE) {
-        stack->tokens[stack->tokens_n++] =
-            (Token){.type = TOKEN_TYPE_TRUE, .str = NULL};
+        token_list_push(stack, (Token){.type = TOKEN_TYPE_TRUE, .str = NULL});
       } else {
         fprintf(stderr, "Unexpected token type: %d\n", stack_token.type);
         assert(false);
@@ -365,9 +365,9 @@ bool eval_postfixed_tokens_as_predicate(const TokenList *const pf_list,
       } else {
         new_value = op1_result && op2_result;
       }
-      stack->tokens[stack->tokens_n++] =
-          (Token){.type = (new_value) ? TOKEN_TYPE_TRUE : TOKEN_TYPE_FALSE,
-                  .str = NULL};
+      token_list_push(stack, (Token){.type = (new_value) ? TOKEN_TYPE_TRUE
+                                                         : TOKEN_TYPE_FALSE,
+                                     .str = NULL});
       break;
     }
     default:
